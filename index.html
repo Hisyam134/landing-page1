@@ -421,6 +421,10 @@
                 errorMsg.innerText = 'Email atau Password salah! Akses ditolak.';
             }
         });
+        if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
+
     </script>
 </body>
 </html>
