@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Scan Tiket - Admin Login</title>
+    <style>
+        /* --- Pengaturan Dasar --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #e4e6eb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* --- Layout Utama (Ukuran Layar HP) --- */
+        .app-container {
+            background-color: #f7f8fb;
+            width: 100%;
+            max-width: 400px;
+            height: 780px; /* Tinggi dikunci agar terlihat seperti device asli */
+            border-radius: 40px;
+            padding: 30px 20px 20px 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            border: 8px solid #1c1c1e; /* Simulasi bezel HP */
+        }
+
+        .dynamic-island {
+            width: 120px;
+            height: 30px;
+            background-color: #000;
+            border-radius: 20px;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .header-spacer {
+            height: 40px; 
+            flex-shrink: 0;
+        }
+
+        /* --- TAMPILAN 1: HALAMAN LOGIN --- */
+        .login-view {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex-grow: 1;
+            padding: 10px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .login-header h2 {
+            font-size: 28px;
+            color: #2d3436;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: #b2bec3;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            color: #636e72;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #dfe6e9;
+            border-radius: 12px;
+            font-size: 16px;
+            background-color: #fff;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #5700e3;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #5700e3, #2e008b);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            box-shadow: 0 8px 15px rgba(87, 0, 227, 0.2);
+        }
+
+        .btn-login:active {
+            transform: scale(0.98);
+        }
+
+        /* Pesan Error */
+        .error-msg {
+            background-color: #ff7675;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 20px;
+            display: none;
+            font-weight: 500;
+        }
+
+        /* --- TAMPILAN 2: DASHBOARD UTAMA --- */
+        .main-dashboard {
+            display: none; /* Tersembunyi sebelum login sukses */
+            flex-direction: column;
+            gap: 14px;
+            overflow-y: auto; /* Membuat daftar tombol bisa di-scroll jika penuh */
+            flex-grow: 1;
+            padding-bottom: 30px; /* Ruang aman di bagian bawah dekat home indicator */
+            padding-right: 2px;
+        }
+
+        /* Menyembunyikan scrollbar bawaan agar UI bersih seperti aplikasi native */
+        .main-dashboard::-webkit-scrollbar {
+            width: 4px;
+        }
+        .main-dashboard::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .info-card {
+            background: white;
+            padding: 18px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 14px;
+            color: #4b4b4b;
+            flex-shrink: 0;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-row strong {
+            color: #2d3436;
+            font-size: 16px;
+        }
+
+        .gate-status {
+            background-color: #2ecc71;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .badge-active {
+            background-color: #3498db;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        /* --- Gaya Tombol Tautan Komponen Aplikasi --- */
+        .action-btn {
+            padding: 18px 20px;
+            border-radius: 18px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+            transition: transform 0.1s;
+            text-align: left;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .action-btn:active { 
+            transform: scale(0.98); 
+        }
+
+        /* Variasi Warna Gradasi Tombol Agar Menarik dan Terstruktur */
+        .btn-admin { background: linear-gradient(135deg, #ff7675, #d63031); } /* Merah modern */
+        .btn-cek-online { background: linear-gradient(135deg, #1dd1a1, #0abde3); } /* Cyan/Teal */
+        .btn-cetak-ots { background: linear-gradient(135deg, #f39c12, #e67e22); } /* Orange */
+        .btn-cetak-gelang { background: linear-gradient(135deg, #9b59b6, #8e44ad); } /* Ungu */
+        .btn-scanner-pc { background: linear-gradient(135deg, #34495e, #2c3e50); } /* Deep Navy/Slate */
+
+        .btn-text { 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        .btn-title { 
+            font-size: 18px; 
+            font-weight: 800; 
+            letter-spacing: 0.5px; 
+        }
+
+        .btn-subtitle { 
+            font-size: 12px; 
+            opacity: 0.85; 
+            margin-top: 2px; 
+        }
+
+        .btn-icon { 
+            font-size: 26px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+        }
+
+        .home-indicator {
+            width: 140px;
+            height: 5px;
+            background-color: #d1d1d6;
+            border-radius: 10px;
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="dynamic-island"></div>
+        <div class="header-spacer"></div>
+
+        <div id="loginSection" class="login-view">
+            <div class="login-header">
+                <h2>Admin Login</h2>
+                <p>Masuk untuk mengakses sistem scanner</p>
+            </div>
+
+            <div id="errorMsg" class="error-msg"></div>
+
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="email">Email Admin</label>
+                    <input type="email" id="email" placeholder="admin@gmail.com" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-login">Masuk Aplikasi</button>
+            </form>
+        </div>
+
+        <div id="dashboardSection" class="main-dashboard">
+            <div class="info-card">
+                <div class="info-row">
+                    <span>🪪</span> <strong>Landing Page</strong>
+                </div>
+                <div class="info-row">
+                    <span>✉️</span> Email: info.yotiket@gmail.com
+                </div>
+                <div class="info-row">
+                    <span>⚙️</span> Setting: Semua Jenis Tiket
+                </div>
+            </div>
+
+            <div class="gate-status">
+                <span>🚪 semua</span>
+                <span class="badge-active">Aktif</span>
+            </div>
+
+            <a href="https://admin-lemon-theta-88.vercel.app" target="_blank" class="action-btn btn-admin">
+                <span class="btn-icon">⚙️</span>
+                <div class="btn-text">
+                    <span class="btn-title">ADMIN PANEL</span>
+                    <span class="btn-subtitle">Untuk Admin</span>
+                </div>
+            </a>
+
+            <a href="https://tiket-online-scaning.vercel.app" target="_blank" class="action-btn btn-cek-online">
+                <span class="btn-icon">🔍</span>
+                <div class="btn-text">
+                    <span class="btn-title">CEK TIKET ONLINE/OTS</span>
+                    <span class="btn-subtitle">Cek Keaslian - Tiket Online</span>
+                </div>
+            </a>
+
+            <a href="https://print-tiket-online.vercel.app" target="_blank" class="action-btn btn-cetak-ots">
+                <span class="btn-icon">🖨️</span>
+                <div class="btn-text">
+                    <span class="btn-title">CETAK TIKET OTS</span>
+                    <span class="btn-subtitle">Cetak Tiket Kertas</span>
+                </div>
+            </a>
+
+            <a href="https://cetak-tiket.vercel.app" target="_blank" class="action-btn btn-cetak-gelang">
+                <span class="btn-icon">🎟️</span>
+                <div class="btn-text">
+                    <span class="btn-title">CETAK TIKET GELANG</span>
+                    <span class="btn-subtitle">Cetak Tiket Fisik</span>
+                </div>
+            </a>
+
+            <a href="https://cetak-tiket.vercel.app/scanner.html" target="_blank" class="action-btn btn-cetak-gelang">
+                <span class="btn-icon">📷</span>
+                <div class="btn-text">
+                    <span class="btn-title">SCANNER GELANG</span>
+                    <span class="btn-subtitle">Mode Scanner Tiket Fisik</span>
+                </div>
+            </a>
+
+            <a href="https://scanner-pc.vercel.app" target="_blank" class="action-btn btn-scanner-pc">
+                <span class="btn-icon">💻</span>
+                <div class="btn-text">
+                    <span class="btn-title">SCANNER UNTUK PC</span>
+                    <span class="btn-subtitle">Cek Keaslian - Tiket Online (PC/LAPTOP)</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="home-indicator"></div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const emailInput = document.getElementById('email').value;
+            const passwordInput = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMsg');
+
+            // Akun Default Login
+            const emailBenar = "info.yotiket@gmail.com";
+            const passwordBenar = "yotiketadalahyotiket";
+
+            if (emailInput === emailBenar && passwordInput === passwordBenar) {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('dashboardSection').style.display = 'flex';
+            } else {
+                errorMsg.style.display = 'block';
+                errorMsg.innerText = 'Email atau Password salah! Akses ditolak.';
+            }
+        });
+    </script>
+</body>
+</html>
