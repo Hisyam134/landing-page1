@@ -21,12 +21,12 @@
             min-height: 100vh;
         }
 
-        /* --- Layout Utama (Ukuran Layar HP) --- */
+        /* --- Layout Utama (Tampilan Default di PC/Laptop) --- */
         .app-container {
             background-color: #f7f8fb;
             width: 100%;
             max-width: 400px;
-            height: 780px; /* Tinggi dikunci agar terlihat seperti device asli */
+            height: 780px; /* Tinggi dikunci jika dibuka di PC */
             border-radius: 40px;
             padding: 30px 20px 20px 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
@@ -34,7 +34,8 @@
             flex-direction: column;
             position: relative;
             overflow: hidden;
-            border: 8px solid #1c1c1e; /* Simulasi bezel HP */
+            border: 8px solid #1c1c1e; /* Simulasi bezel HP di PC */
+            transition: all 0.3s ease;
         }
 
         .dynamic-island {
@@ -47,6 +48,7 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 10;
+            display: block;
         }
 
         .header-spacer {
@@ -140,16 +142,15 @@
 
         /* --- TAMPILAN 2: DASHBOARD UTAMA --- */
         .main-dashboard {
-            display: none; /* Tersembunyi sebelum login sukses */
+            display: none; 
             flex-direction: column;
             gap: 14px;
-            overflow-y: auto; /* Membuat daftar tombol bisa di-scroll jika penuh */
+            overflow-y: auto; 
             flex-grow: 1;
-            padding-bottom: 30px; /* Ruang aman di bagian bawah dekat home indicator */
+            padding-bottom: 30px; 
             padding-right: 2px;
         }
 
-        /* Menyembunyikan scrollbar bawaan agar UI bersih seperti aplikasi native */
         .main-dashboard::-webkit-scrollbar {
             width: 4px;
         }
@@ -202,7 +203,7 @@
             font-size: 12px;
         }
 
-        /* --- Gaya Tombol Tautan Komponen Aplikasi --- */
+        /* --- Gaya Tombol Tautan --- */
         .action-btn {
             padding: 18px 20px;
             border-radius: 18px;
@@ -222,12 +223,11 @@
             transform: scale(0.98); 
         }
 
-        /* Variasi Warna Gradasi Tombol Agar Menarik dan Terstruktur */
-        .btn-admin { background: linear-gradient(135deg, #ff7675, #d63031); } /* Merah modern */
-        .btn-cek-online { background: linear-gradient(135deg, #1dd1a1, #0abde3); } /* Cyan/Teal */
-        .btn-cetak-ots { background: linear-gradient(135deg, #f39c12, #e67e22); } /* Orange */
-        .btn-cetak-gelang { background: linear-gradient(135deg, #9b59b6, #8e44ad); } /* Ungu */
-        .btn-scanner-pc { background: linear-gradient(135deg, #34495e, #2c3e50); } /* Deep Navy/Slate */
+        .btn-admin { background: linear-gradient(135deg, #ff7675, #d63031); }
+        .btn-cek-online { background: linear-gradient(135deg, #1dd1a1, #0abde3); }
+        .btn-cetak-ots { background: linear-gradient(135deg, #f39c12, #e67e22); }
+        .btn-cetak-gelang { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .btn-scanner-pc { background: linear-gradient(135deg, #34495e, #2c3e50); }
 
         .btn-text { 
             display: flex; 
@@ -265,6 +265,35 @@
             transform: translateX(-50%);
             z-index: 10;
             pointer-events: none;
+            display: block;
+        }
+
+        /* --- MEDIA QUERY: KHUSUS UNTUK TAMPILAN HP (LAYAR KECIL) --- */
+        @media (max-width: 480px) {
+            body {
+                background-color: #f7f8fb; /* Menyamakan background body dengan app */
+            }
+
+            .app-container {
+                max-width: 100%;
+                height: 100vh; /* Memenuhi seluruh layar tinggi HP asli */
+                border-radius: 0px; /* Menghilangkan radius melengkung */
+                border: none; /* Menghilangkan frame/bezel hitam tebal */
+                box-shadow: none; /* Menghilangkan shadow karena sudah full screen */
+                padding: 15px; /* Mengurangi padding sedikit agar lebih pas di HP */
+            }
+
+            .dynamic-island {
+                display: none; /* Hilangkan simulasi lubang kamera di HP asli */
+            }
+
+            .home-indicator {
+                display: none; /* Hilangkan garis home bawah karena HP modern sudah punya bawaan */
+            }
+
+            .header-spacer {
+                height: 10px; /* Memperkecil jarak atas karena notch simulasi hilang */
+            }
         }
     </style>
 </head>
@@ -285,7 +314,7 @@
             <form id="loginForm">
                 <div class="input-group">
                     <label for="email">Email Admin</label>
-                    <input type="email" id="email" placeholder="admin@gmail.com" required>
+                    <input type="email" id="email" placeholder="info.yotiket@gmail.com" required>
                 </div>
                 <div class="input-group">
                     <label for="password">Password</label>
@@ -366,21 +395,22 @@
     </div>
 
     <script>
-        
         document.getElementById('loginForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
-            const emailInput = document.getElementById('email').value;
-            const passwordInput = document.getElementById('password').value;
+            // .trim() digunakan untuk mencegah kegagalan login akibat spasi tak sengaja
+            const emailInput = document.getElementById('email').value.trim();
+            const passwordInput = document.getElementById('password').value.trim();
             const errorMsg = document.getElementById('errorMsg');
 
-            // Akun Default Login
+            // Akun Validasi Tetap
             const emailBenar = "info.yotiket@gmail.com";
             const passwordBenar = "yotiketadalahyotiket";
 
             if (emailInput === emailBenar && passwordInput === passwordBenar) {
                 document.getElementById('loginSection').style.display = 'none';
                 document.getElementById('dashboardSection').style.display = 'flex';
+                errorMsg.style.display = 'none'; 
             } else {
                 errorMsg.style.display = 'block';
                 errorMsg.innerText = 'Email atau Password salah! Akses ditolak.';
