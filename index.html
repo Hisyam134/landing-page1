@@ -366,24 +366,6 @@
     </div>
 
     <script>
-        /* Jika lebar layar HP kurang dari 500px, hilangkan frame */
-@media screen and (max-width: 500px) {
-    .app-container {
-        border: none !important; /* Menghilangkan garis pinggir (bezel) */
-        border-radius: 0 !important; /* Menghilangkan lengkungan sudut */
-        box-shadow: none !important; /* Menghilangkan bayangan */
-        height: 100vh !important; /* Membuat tinggi full layar HP */
-        max-width: 100% !important; /* Lebar full layar */
-    }
-
-    .dynamic-island {
-        display: none; /* Menyembunyikan "poni" supaya tidak menutupi layar */
-    }
-
-    .home-indicator {
-        display: none; /* Menyembunyikan indikator bawah */
-    }
-}
         
         document.getElementById('loginForm').addEventListener('submit', function(event) {
             event.preventDefault();
