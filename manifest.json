@@ -7,7 +7,7 @@
   "theme_color": "#5700e3",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "yotiket.png",
       "sizes": "192x192",
       "type": "image/png"
     },
