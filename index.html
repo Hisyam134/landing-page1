@@ -3,437 +3,1357 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Scan Tiket - Admin Login</title>
-    <link rel="icon" type="image/png" href="yotiket-icon.png">
+    <title>YoTiket — Panel Dashboard Admin</title>
+    <!-- Tailwind CSS & Google Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* --- Pengaturan Dasar --- */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            background-color: #e4e6eb;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        /* --- Layout Utama (Tampilan Default di PC/Laptop) --- */
-        .app-container {
-            background-color: #f7f8fb;
-            width: 100%;
-            max-width: 400px;
-            height: 780px; /* Tinggi dikunci jika dibuka di PC */
-            border-radius: 40px;
-            padding: 30px 20px 20px 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-            border: 8px solid #1c1c1e; /* Simulasi bezel HP di PC */
-            transition: all 0.3s ease;
-        }
-
-        .dynamic-island {
-            width: 120px;
-            height: 30px;
-            background-color: #000;
-            border-radius: 20px;
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            display: block;
-        }
-
-        .header-spacer {
-            height: 40px; 
-            flex-shrink: 0;
-        }
-
-        /* --- TAMPILAN 1: HALAMAN LOGIN --- */
-        .login-view {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            flex-grow: 1;
-            padding: 10px;
-        }
-
-        .login-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .login-header h2 {
-            font-size: 28px;
-            color: #2d3436;
-            margin-bottom: 8px;
-        }
-
-        .login-header p {
-            color: #b2bec3;
-            font-size: 14px;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 12px;
-            font-weight: bold;
-            color: #636e72;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #dfe6e9;
-            border-radius: 12px;
-            font-size: 16px;
-            background-color: #fff;
-            transition: border-color 0.2s;
-        }
-
-        .input-group input:focus {
-            outline: none;
-            border-color: #5700e3;
-        }
-
-        .btn-login {
-            background: linear-gradient(135deg, #5700e3, #2e008b);
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-            box-shadow: 0 8px 15px rgba(87, 0, 227, 0.2);
-        }
-
-        .btn-login:active {
-            transform: scale(0.98);
-        }
-
-        /* Pesan Error */
-        .error-msg {
-            background-color: #ff7675;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            text-align: center;
-            margin-bottom: 20px;
-            display: none;
-            font-weight: 500;
-        }
-
-        /* --- TAMPILAN 2: DASHBOARD UTAMA --- */
-        .main-dashboard {
-            display: none; 
-            flex-direction: column;
-            gap: 14px;
-            overflow-y: auto; 
-            flex-grow: 1;
-            padding-bottom: 30px; 
-            padding-right: 2px;
-        }
-
-        .main-dashboard::-webkit-scrollbar {
-            width: 4px;
-        }
-        .main-dashboard::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
-            border-radius: 4px;
-        }
-
-        .info-card {
-            background: white;
-            padding: 18px;
-            border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            font-size: 14px;
-            color: #4b4b4b;
-            flex-shrink: 0;
-        }
-
-        .info-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .info-row strong {
-            color: #2d3436;
-            font-size: 16px;
-        }
-
-        .gate-status {
-            background-color: #2ecc71;
-            color: white;
-            padding: 14px 20px;
-            border-radius: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
-            font-size: 16px;
-            flex-shrink: 0;
-        }
-
-        .badge-active {
-            background-color: #3498db;
-            padding: 4px 10px;
-            border-radius: 10px;
-            font-size: 12px;
-        }
-
-        /* --- Gaya Tombol Tautan --- */
-        .action-btn {
-            padding: 18px 20px;
-            border-radius: 18px;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            cursor: pointer;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
-            transition: transform 0.1s;
-            text-align: left;
-            text-decoration: none;
-            flex-shrink: 0;
-        }
-
-        .action-btn:active { 
-            transform: scale(0.98); 
-        }
-
-        .btn-admin { background: linear-gradient(135deg, #ff7675, #d63031); }
-        .btn-cek-online { background: linear-gradient(135deg, #1dd1a1, #0abde3); }
-        .btn-cetak-ots { background: linear-gradient(135deg, #f39c12, #e67e22); }
-        .btn-cetak-gelang { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
-        .btn-scanner-pc { background: linear-gradient(135deg, #34495e, #2c3e50); }
-
-        .btn-text { 
-            display: flex; 
-            flex-direction: column; 
-        }
-
-        .btn-title { 
-            font-size: 18px; 
-            font-weight: 800; 
-            letter-spacing: 0.5px; 
-        }
-
-        .btn-subtitle { 
-            font-size: 12px; 
-            opacity: 0.85; 
-            margin-top: 2px; 
-        }
-
-        .btn-icon { 
-            font-size: 26px; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 35px;
-        }
-
-        .home-indicator {
-            width: 140px;
-            height: 5px;
-            background-color: #d1d1d6;
-            border-radius: 10px;
-            position: absolute;
-            bottom: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            pointer-events: none;
-            display: block;
-        }
-
-        /* --- MEDIA QUERY: KHUSUS UNTUK TAMPILAN HP (LAYAR KECIL) --- */
-        @media (max-width: 480px) {
-            body {
-                background-color: #f7f8fb; /* Menyamakan background body dengan app */
-            }
-
-            .app-container {
-                max-width: 100%;
-                height: 100vh; /* Memenuhi seluruh layar tinggi HP asli */
-                border-radius: 0px; /* Menghilangkan radius melengkung */
-                border: none; /* Menghilangkan frame/bezel hitam tebal */
-                box-shadow: none; /* Menghilangkan shadow karena sudah full screen */
-                padding: 15px; /* Mengurangi padding sedikit agar lebih pas di HP */
-            }
-
-            .dynamic-island {
-                display: none; /* Hilangkan simulasi lubang kamera di HP asli */
-            }
-
-            .home-indicator {
-                display: none; /* Hilangkan garis home bawah karena HP modern sudah punya bawaan */
-            }
-
-            .header-spacer {
-                height: 10px; /* Memperkecil jarak atas karena notch simulasi hilang */
-            }
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .glass-input { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: #f8fafc; }
+        .glass-input:focus { border-color: #6366f1; outline: none; }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
-    <link rel="manifest" href="manifest.json">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-
 </head>
-<body>
+<body class="min-h-screen flex flex-col antialiased">
 
-    <div class="app-container">
-        <div class="dynamic-island"></div>
-        <div class="header-spacer"></div>
-
-        <div id="loginSection" class="login-view">
-            <div class="login-header">
-                <h2>Admin Login</h2>
-                <p>Masuk untuk mengakses sistem scanner</p>
-            </div>
-
-            <div id="errorMsg" class="error-msg"></div>
-
-            <form id="loginForm">
-                <div class="input-group">
-                    <label for="email">Email Admin</label>
-                    <input type="email" id="email" placeholder="info.yotiket@gmail.com" required>
-                </div>
-                <div class="input-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="btn-login">Masuk Aplikasi</button>
-            </form>
-        </div>
-
-        <div id="dashboardSection" class="main-dashboard">
-            <div class="info-card">
-                <div class="info-row">
-                    <span>🪪</span> <strong>Landing Page</strong>
-                </div>
-                <div class="info-row">
-                    <span>✉️</span> Email: info.yotiket@gmail.com
-                </div>
-                <div class="info-row">
-                    <span>⚙️</span> Setting: Semua Jenis Tiket
-                </div>
-            </div>
-
-            <div class="gate-status">
-                <span>🚪 semua</span>
-                <span class="badge-active">Aktif</span>
-            </div>
-
-            <a href="https://admin-lemon-theta-88.vercel.app" target="_blank" class="action-btn btn-admin">
-                <span class="btn-icon">⚙️</span>
-                <div class="btn-text">
-                    <span class="btn-title">ADMIN PANEL</span>
-                    <span class="btn-subtitle">Untuk Admin</span>
-                </div>
-            </a>
-
-            <a href="https://tiket-online-scaning.vercel.app" target="_blank" class="action-btn btn-cek-online">
-                <span class="btn-icon">🔍</span>
-                <div class="btn-text">
-                    <span class="btn-title">CEK TIKET ONLINE/OTS</span>
-                    <span class="btn-subtitle">Cek Keaslian - Tiket Online</span>
-                </div>
-            </a>
-
-            <a href="https://print-tiket-online.vercel.app" target="_blank" class="action-btn btn-cetak-ots">
-                <span class="btn-icon">🖨️</span>
-                <div class="btn-text">
-                    <span class="btn-title">CETAK TIKET OTS</span>
-                    <span class="btn-subtitle">Cetak Tiket Kertas</span>
-                </div>
-            </a>
-
-            <a href="https://cetak-tiket.vercel.app" target="_blank" class="action-btn btn-cetak-gelang">
-                <span class="btn-icon">🎟️</span>
-                <div class="btn-text">
-                    <span class="btn-title">CETAK TIKET GELANG</span>
-                    <span class="btn-subtitle">Cetak Tiket Fisik</span>
-                </div>
-            </a>
-
-            <a href="https://cetak-tiket.vercel.app/scanner.html" target="_blank" class="action-btn btn-cetak-gelang">
-                <span class="btn-icon">📷</span>
-                <div class="btn-text">
-                    <span class="btn-title">SCANNER GELANG</span>
-                    <span class="btn-subtitle">Mode Scanner Tiket Fisik</span>
-                </div>
-            </a>
-
-            <a href="https://scanner-pc.vercel.app" target="_blank" class="action-btn btn-scanner-pc">
-                <span class="btn-icon">💻</span>
-                <div class="btn-text">
-                    <span class="btn-title">SCANNER UNTUK PC</span>
-                    <span class="btn-subtitle">Cek Keaslian - Tiket Online (PC/LAPTOP)</span>
-                </div>
-            </a>
-        </div>
-        <a href="https://print-tiket-online.vercel.app" target="_blank" class="action-btn btn-cetak-ots">
-                <span class="btn-icon">🖨️</span>
-                <div class="btn-text">
-                    <span class="btn-title">DASHBOARD</span>
-                    <span class="btn-subtitle">Pantau Seluruh Aktifitas</span>
-                </div>
-            </a>
-
-
-        <div class="home-indicator"></div>
+    <!-- OVERLAY LOADING UTAMA -->
+    <div id="main-loader" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-md transition-all duration-300">
+        <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="mt-4 text-sm font-semibold text-slate-400">Memuat data YoTiket Admin...</p>
     </div>
 
+    <!-- HALAMAN LOGIN (Akan disembunyikan jika sudah masuk) -->
+    <div id="auth-container" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950 px-4">
+        <div class="w-full max-w-md p-8 rounded-3xl glass-card space-y-6 shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-40 h-40 bg-indigo-600/10 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-purple-600/10 rounded-full blur-3xl"></div>
+
+            <div class="text-center space-y-2">
+                <h1 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 via-indigo-200 to-purple-400 bg-clip-text text-transparent">YoTiket Admin</h1>
+                <p class="text-xs text-slate-400">Silakan masuk menggunakan akun Administrator resmi</p>
+            </div>
+
+            <div id="login-error" class="hidden p-3 rounded-xl bg-red-950/50 border border-red-500/30 text-red-200 text-xs text-center"></div>
+
+            <form id="form-login" class="space-y-4" onsubmit="handleLogin(event)">
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Email Admin</label>
+                    <input type="email" id="login-email" required class="w-full rounded-xl px-4 py-3 text-sm glass-input" placeholder="admin@yotiket.com">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Kata Sandi</label>
+                    <input type="password" id="login-password" required class="w-full rounded-xl px-4 py-3 text-sm glass-input" placeholder="••••••••">
+                </div>
+                <button type="submit" id="btn-login" class="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 py-3 text-sm font-bold text-white transition-all active:scale-[0.98] mt-2 shadow-lg shadow-indigo-600/20">
+                    Masuk ke Dashboard
+                </button>
+            </form>
+            
+        </div>
+    </div>
+
+    <!-- HALAMAN DASHBOARD UTAMA -->
+    <div id="dashboard-container" class="hidden flex-1 flex flex-col">
+        <!-- TOP NAVBAR -->
+        <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-40 px-6 py-4">
+            <div class="max-w-7xl mx-auto flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="bg-gradient-to-br from-indigo-600 to-purple-600 text-white font-black px-3 py-1.5 rounded-xl text-lg shadow-md shadow-indigo-600/10">YT</div>
+                    <div>
+                        <h2 class="text-base font-extrabold tracking-tight">Panel Admin YoTiket</h2>
+                        <p class="text-[10px] text-emerald-500 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span> Terhubung ke Backend
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <div class="text-right hidden sm:block">
+                        <p id="admin-display-email" class="text-xs font-semibold text-slate-200">admin@yotiket.com</p>
+                        <p class="text-[9px] text-indigo-400 font-bold uppercase tracking-wider">Super Administrator</p>
+                    </div>
+                    <button onclick="openSettingsModal()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors text-slate-300" title="Pengaturan API">
+                        ⚙️
+                    </button>
+                    <button onclick="handleLogout()" class="rounded-xl bg-red-950/50 hover:bg-red-900/50 border border-red-500/20 px-3.5 py-2 text-xs font-bold text-red-400 transition-all">
+                        🚪 Keluar
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT -->
+        <div class="max-w-7xl mx-auto w-full flex-1 flex flex-col md:flex-row gap-6 p-6">
+            <!-- SIDEBAR MENU -->
+            <aside class="md:w-64 flex-shrink-0">
+                <nav class="space-y-1.5 sticky top-24">
+                    <button onclick="switchTab('overview')" id="tab-btn-overview" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left bg-indigo-600 text-white shadow-lg shadow-indigo-600/10">
+                        <span>📊</span> Ringkasan
+                    </button>
+                    <button onclick="switchTab('events')" id="tab-btn-events" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left text-slate-400 hover:bg-slate-800/50 hover:text-white">
+                        <span>📅</span> Kelola Acara / Event
+                    </button>
+                    <button onclick="switchTab('transactions')" id="tab-btn-transactions" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left text-slate-400 hover:bg-slate-800/50 hover:text-white">
+                        <span>🎟️</span> Transaksi E-Ticket
+                    </button>
+                </nav>
+            </aside>
+
+            <!-- CONTENT AREA -->
+            <main class="flex-1 space-y-6 min-w-0">
+                <!-- VIEW 1: OVERVIEW -->
+                <section id="section-overview" class="space-y-6">
+                    <!-- Metrics Row -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="p-5 rounded-2xl glass-card space-y-2">
+                            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Total Pendapatan</p>
+                            <h3 id="stat-revenue" class="text-xl md:text-2xl font-black text-emerald-400">Rp 0</h3>
+                            <p class="text-[9px] text-slate-500 font-medium">Transaksi berstatus PAID/USED</p>
+                        </div>
+                        <div class="p-5 rounded-2xl glass-card space-y-2">
+                            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Tiket Terjual</p>
+                            <h3 id="stat-tickets" class="text-xl md:text-2xl font-black text-indigo-400">0 Pcs</h3>
+                            <p class="text-[9px] text-slate-500 font-medium">Kategori tiket terjual lunas</p>
+                        </div>
+                        <div class="p-5 rounded-2xl glass-card space-y-2">
+                            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Event Aktif</p>
+                            <h3 id="stat-events" class="text-xl md:text-2xl font-black text-purple-400">0 Event</h3>
+                            <p class="text-[9px] text-slate-500 font-medium">Total event di database</p>
+                        </div>
+                        <div class="p-5 rounded-2xl glass-card space-y-2">
+                            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Konversi Bayar</p>
+                            <h3 id="stat-conversion" class="text-xl md:text-2xl font-black text-amber-400">0%</h3>
+                            <p class="text-[9px] text-slate-500 font-medium">Rasio transaksi lunas / total</p>
+                        </div>
+                    </div>
+
+                    <!-- Status Distribution Table -->
+                    <div class="p-6 rounded-2xl glass-card space-y-4">
+                        <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-300">Status Transaksi Saat Ini</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                            <div class="p-3.5 rounded-xl bg-yellow-500/5 border border-yellow-500/10 text-center">
+                                <span class="text-xs text-yellow-400 block font-semibold">PENDING</span>
+                                <span id="dist-pending" class="text-lg font-bold block mt-1">0</span>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/10 text-center">
+                                <span class="text-xs text-emerald-400 block font-semibold">PAID</span>
+                                <span id="dist-paid" class="text-lg font-bold block mt-1">0</span>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-indigo-500/5 border border-indigo-500/10 text-center">
+                                <span class="text-xs text-indigo-400 block font-semibold">USED</span>
+                                <span id="dist-used" class="text-lg font-bold block mt-1">0</span>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-red-500/5 border border-red-500/10 text-center">
+                                <span class="text-xs text-red-400 block font-semibold">EXPIRED</span>
+                                <span id="dist-expired" class="text-lg font-bold block mt-1">0</span>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-slate-500/5 border border-slate-500/10 text-center col-span-2 md:col-span-1">
+                                <span class="text-xs text-slate-400 block font-semibold">CANCELLED</span>
+                                <span id="dist-cancelled" class="text-lg font-bold block mt-1">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Transactions Table -->
+                    <div class="p-6 rounded-2xl glass-card space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-300">5 Transaksi Terbaru</h3>
+                            <button onclick="switchTab('transactions')" class="text-xs text-indigo-400 hover:underline">Lihat Semua ➜</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs text-left">
+                                <thead>
+                                    <tr class="border-b border-slate-800 text-slate-400 font-bold uppercase">
+                                        <th class="py-3 px-2">Order ID</th>
+                                        <th class="py-3 px-2">Pembeli</th>
+                                        <th class="py-3 px-2">Nominal</th>
+                                        <th class="py-3 px-2">Status</th>
+                                        <th class="py-3 px-2">Waktu</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-transactions-tbody">
+                                    <!-- Rendered dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 2: EVENTS -->
+                <section id="section-events" class="hidden space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-bold">Kelola Acara (Event)</h2>
+                            <p class="text-xs text-slate-400">Tambah, ubah info, atau hapus event aktif Anda</p>
+                        </div>
+                        <button onclick="openEventModal()" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 text-xs font-bold text-white transition-all shadow-lg shadow-indigo-600/10 flex items-center gap-1.5">
+                            ➕ Buat Event Baru
+                        </button>
+                    </div>
+
+                    <div id="events-grid" class="grid sm:grid-cols-2 gap-4">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </section>
+
+                <!-- VIEW 3: TRANSACTIONS -->
+                <section id="section-transactions" class="hidden space-y-6">
+                    <div>
+                        <h2 class="text-xl font-bold">Riwayat Transaksi E-Ticket</h2>
+                        <p class="text-xs text-slate-400">Cari transaksi pembeli, perbarui status pembayaran, dan kirim ulang tiket</p>
+                    </div>
+
+                    <!-- Search and Filter Bar -->
+                    <div class="grid sm:grid-cols-3 gap-3">
+                        <div class="sm:col-span-2 relative flex items-center">
+                            <input type="text" id="trx-search" oninput="filterTransactions()" class="w-full rounded-xl px-4 py-3 text-xs glass-input pl-10" placeholder="Cari berdasarkan Order ID, nama pembeli, email, atau kode tiket...">
+                            <span class="absolute left-3 text-slate-500 text-sm">🔍</span>
+                        </div>
+                        <div>
+                            <select id="trx-filter-status" onchange="filterTransactions()" class="w-full rounded-xl px-4 py-3 text-xs glass-input">
+                                <option value="ALL">Semua Status</option>
+                                <option value="PENDING">PENDING</option>
+                                <option value="PAID">PAID</option>
+                                <option value="USED">USED</option>
+                                <option value="EXPIRED">EXPIRED</option>
+                                <option value="CANCELLED">CANCELLED</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Transactions Table Card -->
+                    <div class="p-6 rounded-2xl glass-card">
+                        <div class="overflow-x-auto max-h-[600px]">
+                            <table class="w-full text-xs text-left min-w-[700px]">
+                                <thead>
+                                    <tr class="border-b border-slate-800 text-slate-400 font-bold uppercase">
+                                        <th class="py-3 px-2">Order ID</th>
+                                        <th class="py-3 px-2">Event & Kategori</th>
+                                        <th class="py-3 px-2">Pelanggan</th>
+                                        <th class="py-3 px-2">Nominal</th>
+                                        <th class="py-3 px-2">Status</th>
+                                        <th class="py-3 px-2">Tiket / QR</th>
+                                        <th class="py-3 px-2 text-right">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transactions-tbody">
+                                    <!-- Rendered dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL EDIT/TAMBAH EVENT -->
+    <div id="event-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 backdrop-blur-sm px-4">
+        <div class="w-full max-w-2xl p-6 md:p-8 rounded-3xl glass-card space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between">
+                <h3 id="event-modal-title" class="text-lg font-bold">Edit Event</h3>
+                <button onclick="closeEventModal()" class="text-slate-400 hover:text-white p-1 hover:bg-slate-800 rounded-lg text-sm">✕</button>
+            </div>
+
+            <form id="form-event" onsubmit="saveEvent(event)" class="space-y-4">
+                <input type="hidden" id="event-id">
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Nama Event</label>
+                        <input type="text" id="event-title" required class="w-full rounded-xl px-4 py-2.5 text-xs glass-input" placeholder="Konser Musik Megah">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lokasi / Venue</label>
+                        <input type="text" id="event-location" required class="w-full rounded-xl px-4 py-2.5 text-xs glass-input" placeholder="Gelora Bung Karno, Jakarta">
+                    </div>
+                </div>
+
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tanggal & Waktu Acara</label>
+                        <input type="datetime-local" id="event-date" required class="w-full rounded-xl px-4 py-2.5 text-xs glass-input">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Owner Email (Pembuat Event)</label>
+                        <input type="email" id="event-owner-email" class="w-full rounded-xl px-4 py-2.5 text-xs glass-input" placeholder="info.yotiket@gmail.com">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Deskripsi Lengkap Event</label>
+                    <textarea id="event-description" rows="3" class="w-full rounded-xl px-4 py-2.5 text-xs glass-input" placeholder="Tuliskan deskripsi lengkap event, syarat, ketentuan masuk..."></textarea>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Foto Cover Event</label>
+                    <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                        <input type="file" id="event-image-file" accept="image/*" class="hidden" onchange="handleAdminImageUpload(this)">
+                        <button type="button" onclick="document.getElementById('event-image-file').click()" class="rounded-xl bg-slate-800 hover:bg-slate-700 px-4 py-2.5 text-xs font-semibold text-slate-200 border border-slate-700 transition-all flex items-center gap-1.5 active:scale-[0.98]">
+                            📁 Unggah File Gambar
+                        </button>
+                        <span id="event-image-status" class="text-[11px] text-slate-400 font-medium">Belum ada file dipilih</span>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mt-1">Atau masukkan Link/URL Gambar</label>
+                        <input type="text" id="event-image-url" class="w-full rounded-xl px-4 py-2.5 text-xs glass-input" placeholder="https://example.com/cover.jpg">
+                        <p class="text-[9px] text-slate-500">Gambar yang diunggah akan otomatis disimpan di cloud Storage dan menghasilkan URL publik.</p>
+                    </div>
+                </div>
+
+                <!-- Bagian Kategori Tiket (Hanya saat membuat event baru) -->
+                <div id="event-modal-categories-section" class="border-t border-slate-800 pt-4 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Kategori & Kuota Tiket Awal</h4>
+                        <button type="button" onclick="addModalCategoryRow()" class="rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/20 px-2.5 py-1.5 text-[10px] font-bold text-indigo-400 transition-all flex items-center gap-1 active:scale-[0.98]">
+                            ➕ Tambah Kategori
+                        </button>
+                    </div>
+                    <div id="modal-categories-container" class="space-y-3">
+                        <!-- Baris Kategori Tiket Dibuat Dinamis -->
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-800 pt-4 flex justify-end gap-3">
+                    <button type="button" onclick="closeEventModal()" class="rounded-xl px-4 py-2.5 text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all">Batal</button>
+                    <button type="submit" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2.5 text-xs font-bold text-white transition-all">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DETAIL KATEGORI TIKET -->
+    <div id="category-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 backdrop-blur-sm px-4">
+        <div class="w-full max-w-2xl p-6 md:p-8 rounded-3xl glass-card space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-extrabold uppercase tracking-wider text-slate-300">Daftar Kategori Tiket</h3>
+                    <p id="cat-modal-subtitle" class="text-xs text-slate-400 font-medium">Nama Event Terpilih</p>
+                </div>
+                <button onclick="closeCategoryModal()" class="text-slate-400 hover:text-white p-1 hover:bg-slate-800 rounded-lg text-sm">✕</button>
+            </div>
+
+            <!-- List Kategori yang Ada -->
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Kategori Aktif</span>
+                    <button onclick="showAddCategoryForm()" class="rounded-lg bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/20 px-2.5 py-1 text-[10px] font-bold text-indigo-400 transition-all">
+                        ➕ Kategori Baru
+                    </button>
+                </div>
+                
+                <div id="category-form-container" class="hidden p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
+                    <h4 id="cat-form-title" class="text-xs font-bold text-indigo-400">Tambah Kategori Baru</h4>
+                    <form id="form-category" onsubmit="saveCategory(event)" class="space-y-3">
+                        <input type="hidden" id="cat-id">
+                        <input type="hidden" id="cat-event-id">
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="space-y-1">
+                                <label class="text-[9px] font-bold text-slate-400 uppercase">Nama Kelas Tiket</label>
+                                <input type="text" id="cat-name" required class="w-full rounded-lg px-3 py-2 text-xs glass-input" placeholder="VIP Barat">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[9px] font-bold text-slate-400 uppercase">Kuota Total</label>
+                                <input type="number" id="cat-quota" required class="w-full rounded-lg px-3 py-2 text-xs glass-input" placeholder="100">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="space-y-1">
+                                <label class="text-[9px] font-bold text-slate-400 uppercase">Harga (Rp)</label>
+                                <input type="number" id="cat-price" required class="w-full rounded-lg px-3 py-2 text-xs glass-input" placeholder="150000">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[9px] font-bold text-slate-400 uppercase">Sudah Dipesan</label>
+                                <input type="number" id="cat-booked" value="0" class="w-full rounded-lg px-3 py-2 text-xs glass-input" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[9px] font-bold text-slate-400 uppercase">Deskripsi Ringkas</label>
+                            <input type="text" id="cat-description" class="w-full rounded-lg px-3 py-2 text-xs glass-input" placeholder="Termasuk soft drink, gate khusus VIP">
+                        </div>
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button type="button" onclick="hideCategoryForm()" class="rounded-lg px-3 py-1.5 text-[10px] font-bold text-slate-400 hover:bg-slate-800">Batal</button>
+                            <button type="submit" class="rounded-lg bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 text-[10px] font-bold text-white">Simpan</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="categories-list-container" class="space-y-2 max-h-[350px] overflow-y-auto pr-1">
+                    <!-- Rendered dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- MODAL PENGATURAN API URL -->
+    <div id="settings-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 backdrop-blur-sm px-4">
+        <div class="w-full max-w-md p-6 rounded-3xl glass-card space-y-4 shadow-2xl relative">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300">Pengaturan API Backend</h3>
+                <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
+            </div>
+            
+            <div class="space-y-3">
+                <p class="text-xs text-slate-400 leading-relaxed">Masukkan alamat URL server backend Anda saat ini. Server default lokal adalah <code>http://localhost:3000</code>.</p>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">URL API BACKEND</label>
+                    <input type="text" id="settings-api-url" class="w-full rounded-xl px-4 py-2.5 text-xs glass-input" placeholder="http://localhost:3000">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeSettingsModal()" class="rounded-xl px-4 py-2 text-xs font-semibold text-slate-400 hover:bg-slate-850">Batal</button>
+                <button onclick="saveSettings()" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2 text-xs font-bold text-white">Simpan & Muat Ulang</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-3 bg-slate-900 border border-slate-800 text-xs px-5 py-3.5 rounded-2xl shadow-xl max-w-sm">
+        <span id="toast-icon" class="text-base"></span>
+        <span id="toast-text" class="font-medium text-slate-200"></span>
+    </div>
+
+    <!-- MAIN JAVASCRIPT LOGIC -->
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(event) {
-            event.preventDefault();
+        // Inisialisasi Supabase SDK
+        const SUPABASE_URL = 'https://ctwpgzjsqkxkaornfgjd.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0d3BnempzcWt4a2Fvcm5mZ2pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMzAzMzksImV4cCI6MjA5NTYwNjMzOX0.nSkB-m9UjDJ0RgXx_akQCxNJjwyLgj-QbH25S_zCVS8';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            // .trim() digunakan untuk mencegah kegagalan login akibat spasi tak sengaja
-            const emailInput = document.getElementById('email').value.trim();
-            const passwordInput = document.getElementById('password').value.trim();
-            const errorMsg = document.getElementById('errorMsg');
+        // State Global
+        let currentSession = null;
+        let activeTab = 'overview';
+        let allTransactions = [];
+        let allEvents = [];
+        
+        // Membaca API URL dari LocalStorage atau default otomatis secara cerdas
+        let defaultApiUrl = 'https://percobaan-seven-omega.vercel.app';
+        if (window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')) {
+            defaultApiUrl = 'http://localhost:3000';
+        }
 
-            // Akun Validasi Tetap
-            const emailBenar = "info.yotiket@gmail.com";
-            const passwordBenar = "yotiketadalahyotiket";
+        // Hapus localhost dari localStorage jika halaman diakses secara online HTTPS
+        if (window.location.protocol === 'https:' && localStorage.getItem('YOTIKET_API_URL') && localStorage.getItem('YOTIKET_API_URL').startsWith('http://localhost')) {
+            localStorage.removeItem('YOTIKET_API_URL');
+        }
+        
+        let API_URL = localStorage.getItem('YOTIKET_API_URL') || defaultApiUrl;
 
-            if (emailInput === emailBenar && passwordInput === passwordBenar) {
-                document.getElementById('loginSection').style.display = 'none';
-                document.getElementById('dashboardSection').style.display = 'flex';
-                errorMsg.style.display = 'none'; 
-            } else {
-                errorMsg.style.display = 'block';
-                errorMsg.innerText = 'Email atau Password salah! Akses ditolak.';
+        // Tampilkan Toast Notifikasi
+        function showToast(text, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const textEl = document.getElementById('toast-text');
+
+            icon.innerText = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+            textEl.innerText = text;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3500);
+        }
+
+        // Jalankan saat halaman pertama dimuat
+        window.addEventListener('load', async () => {
+            document.getElementById('settings-api-url').value = API_URL;
+            
+            // Monitor status autentikasi Supabase
+            supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                currentSession = session;
+                if (session) {
+                    document.getElementById('admin-display-email').innerText = session.user.email;
+                    // Verifikasi hak akses admin di backend
+                    const authorized = await verifyAdminRights(session.access_token);
+                    if (authorized) {
+                        document.getElementById('auth-container').style.display = 'none';
+                        document.getElementById('dashboard-container').style.display = 'flex';
+                        loadDashboardData();
+                    } else {
+                        // Jika bukan admin, keluarkan dari Supabase
+                        showToast("Akses Ditolak! Akun Anda bukan admin.", "error");
+                        document.getElementById('login-error').innerText = "Akses Ditolak! Akun Anda bukan admin.";
+                        document.getElementById('login-error').classList.remove('hidden');
+                        await supabaseClient.auth.signOut();
+                        showAuthScreen();
+                    }
+                } else {
+                    showAuthScreen();
+                }
+            });
+
+            // Inisialisasi Sesi Pertama
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                currentSession = session;
+                if (!session) {
+                    showAuthScreen();
+                }
+            } catch (err) {
+                console.error("Gagal mendapatkan session:", err);
+                showAuthScreen();
             }
         });
-        if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js');
-}
 
+        function showAuthScreen() {
+            document.getElementById('main-loader').style.display = 'none';
+            document.getElementById('auth-container').style.display = 'flex';
+            document.getElementById('dashboard-container').style.display = 'none';
+        }
+
+        // Verifikasi admin via API backend
+        async function verifyAdminRights(token) {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/check`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.status === 200) {
+                    const data = await res.json();
+                    return data.success;
+                }
+                return false;
+            } catch (err) {
+                console.error("Gagal verifikasi admin ke server:", err);
+                return false;
+            }
+        }
+
+        // Pengaturan Modal API URL
+        function openSettingsModal() {
+            document.getElementById('settings-modal').style.display = 'flex';
+        }
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').style.display = 'none';
+        }
+        function saveSettings() {
+            const newUrl = document.getElementById('settings-api-url').value.trim();
+            if (newUrl) {
+                localStorage.setItem('YOTIKET_API_URL', newUrl);
+                API_URL = newUrl;
+                showToast("URL API Backend berhasil disimpan!", "success");
+                closeSettingsModal();
+                setTimeout(() => window.location.reload(), 1000);
+            }
+        }
+
+        // Aksi Login
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            const errorEl = document.getElementById('login-error');
+            const submitBtn = document.getElementById('btn-login');
+
+            errorEl.classList.add('hidden');
+            submitBtn.innerText = "⏳ Memproses...";
+            submitBtn.disabled = true;
+
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    errorEl.innerText = `Gagal login: ${error.message}`;
+                    errorEl.classList.remove('hidden');
+                    submitBtn.innerText = "Masuk ke Dashboard";
+                    submitBtn.disabled = false;
+                }
+            } catch (err) {
+                errorEl.innerText = `Terjadi kesalahan sistem: ${err.message}`;
+                errorEl.classList.remove('hidden');
+                submitBtn.innerText = "Masuk ke Dashboard";
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Aksi Logout
+        async function handleLogout() {
+            document.getElementById('main-loader').style.display = 'flex';
+            await supabaseClient.auth.signOut();
+            window.location.reload();
+        }
+
+        // Mengganti Tab Dashboard
+        function switchTab(tabId) {
+            activeTab = tabId;
+            const tabs = ['overview', 'events', 'transactions'];
+            
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                const sec = document.getElementById(`section-${t}`);
+                if (t === tabId) {
+                    btn.className = "w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left bg-indigo-600 text-white shadow-lg shadow-indigo-600/10";
+                    sec.classList.remove('hidden');
+                } else {
+                    btn.className = "w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left text-slate-400 hover:bg-slate-800/50 hover:text-white";
+                    sec.classList.add('hidden');
+                }
+            });
+
+            if (tabId === 'overview') loadDashboardData();
+            if (tabId === 'events') loadEventsData();
+            if (tabId === 'transactions') loadTransactionsData();
+        }
+
+        // Mengambil Seluruh Data Dashboard
+        async function loadDashboardData() {
+            if (!currentSession) return;
+            document.getElementById('main-loader').style.display = 'flex';
+            try {
+                const res = await fetch(`${API_URL}/api/admin/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${currentSession.access_token}` }
+                });
+                
+                if (res.status === 200) {
+                    const data = await res.json();
+                    
+                    // Update Stats Card
+                    document.getElementById('stat-revenue').innerText = `Rp ${Number(data.totalRevenue).toLocaleString('id-ID')}`;
+                    document.getElementById('stat-tickets').innerText = `${data.totalTicketsSold} Pcs`;
+                    document.getElementById('stat-events').innerText = `${data.totalEvents} Event`;
+                    
+                    // Hitung persentase konversi
+                    const total = data.totalTransactions;
+                    const paid = data.statusCounts.PAID + data.statusCounts.USED;
+                    const rate = total > 0 ? Math.round((paid / total) * 100) : 0;
+                    document.getElementById('stat-conversion').innerText = `${rate}%`;
+
+                    // Update Distribusi Status
+                    document.getElementById('dist-pending').innerText = data.statusCounts.PENDING;
+                    document.getElementById('dist-paid').innerText = data.statusCounts.PAID;
+                    document.getElementById('dist-used').innerText = data.statusCounts.USED;
+                    document.getElementById('dist-expired').innerText = data.statusCounts.EXPIRED;
+                    document.getElementById('dist-cancelled').innerText = data.statusCounts.CANCELLED;
+
+                    // Update Tabel Transaksi Terakhir
+                    const tbody = document.getElementById('recent-transactions-tbody');
+                    tbody.innerHTML = '';
+                    
+                    if (data.recentTransactions.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-500">Belum ada transaksi</td></tr>`;
+                    } else {
+                        data.recentTransactions.forEach(t => {
+                            const dateStr = new Date(t.created_at).toLocaleDateString('id-ID', {
+                                day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                            });
+                            
+                            let statusClass = "text-yellow-400 bg-yellow-500/10";
+                            if (t.status === 'PAID') statusClass = "text-emerald-400 bg-emerald-500/10";
+                            if (t.status === 'USED') statusClass = "text-indigo-400 bg-indigo-500/10";
+                            if (t.status === 'EXPIRED') statusClass = "text-red-400 bg-red-500/10";
+
+                            tbody.innerHTML += `
+                                <tr class="border-b border-slate-800/40 hover:bg-slate-800/20 transition-all">
+                                    <td class="py-3 px-2 font-mono font-bold text-slate-300">${t.order_id}</td>
+                                    <td class="py-3 px-2">
+                                        <div class="font-bold text-slate-200">${t.customer_name}</div>
+                                        <div class="text-[10px] text-slate-500">${t.customer_email}</div>
+                                    </td>
+                                    <td class="py-3 px-2 font-semibold text-slate-300">Rp ${Number(t.amount).toLocaleString('id-ID')}</td>
+                                    <td class="py-3 px-2">
+                                        <span class="px-2 py-0.5 rounded-full font-bold text-[9px] ${statusClass}">${t.status}</span>
+                                    </td>
+                                    <td class="py-3 px-2 text-slate-500">${dateStr}</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                } else {
+                    showToast("Gagal memuat ringkasan dashboard", "error");
+                }
+            } catch (err) {
+                console.error("Error load dashboard:", err);
+                showToast("Terjadi kesalahan koneksi server", "error");
+            } finally {
+                document.getElementById('main-loader').style.display = 'none';
+            }
+        }
+
+        // ==========================================
+        // MANAJEMEN EVENT
+        // ==========================================
+
+        async function loadEventsData() {
+            if (!currentSession) return;
+            document.getElementById('main-loader').style.display = 'flex';
+            try {
+                const res = await fetch(`${API_URL}/api/admin/events`, {
+                    headers: { 'Authorization': `Bearer ${currentSession.access_token}` }
+                });
+                
+                if (res.status === 200) {
+                    allEvents = await res.json();
+                    renderEventsGrid();
+                } else {
+                    showToast("Gagal memuat daftar event", "error");
+                }
+            } catch (err) {
+                console.error("Error load events:", err);
+                showToast("Kesalahan saat menghubungkan ke server", "error");
+            } finally {
+                document.getElementById('main-loader').style.display = 'none';
+            }
+        }
+
+        function renderEventsGrid() {
+            const grid = document.getElementById('events-grid');
+            grid.innerHTML = '';
+
+            if (allEvents.length === 0) {
+                grid.innerHTML = `<div class="col-span-2 text-center py-10 text-slate-500">Belum ada event yang didaftarkan.</div>`;
+                return;
+            }
+
+            allEvents.forEach(e => {
+                const coverImg = e.image_url || 'https://picsum.photos/id/100/500/300';
+                const dateStr = new Date(e.event_date).toLocaleDateString('id-ID', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+
+                grid.innerHTML += `
+                    <div class="rounded-2xl glass-card overflow-hidden flex flex-col group hover:border-slate-700 transition-all duration-300">
+                        <div class="h-40 bg-slate-800 relative overflow-hidden flex-shrink-0">
+                            <img src="${coverImg}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+                            <div class="absolute bottom-3 left-4 right-4">
+                                <span class="text-[9px] bg-indigo-600 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider text-white">YoTiket Acara</span>
+                                <h4 class="font-extrabold text-sm text-slate-100 mt-1 truncate leading-tight">${e.title}</h4>
+                            </div>
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col justify-between space-y-4">
+                            <div class="text-[11px] space-y-1 text-slate-300">
+                                <div class="flex items-center gap-1.5"><span class="text-xs">📅</span> ${dateStr}</div>
+                                <div class="flex items-center gap-1.5 truncate"><span class="text-xs">📍</span> ${e.location}</div>
+                                <div class="flex items-center gap-1.5 truncate text-slate-500"><span class="text-xs">📧</span> Owner: ${e.owner_email || 'Sistem'}</div>
+                            </div>
+
+                            <div class="flex gap-2 border-t border-slate-800/40 pt-3">
+                                <button onclick="openCategoryModal(${e.id}, '${e.title.replace(/'/g, "\\'")}')" class="flex-1 rounded-xl bg-slate-800 hover:bg-slate-700 py-2 text-[10px] font-bold text-slate-200 transition-all">
+                                    🎟️ Kategori Tiket
+                                </button>
+                                <button onclick="openEventModal(${e.id})" class="rounded-xl border border-slate-700 hover:bg-slate-800 px-3 py-2 text-[10px] font-bold text-slate-300 transition-all">
+                                    ⚙️ Ubah
+                                </button>
+                                <button onclick="deleteEvent(${e.id})" class="rounded-xl bg-red-950/30 hover:bg-red-900/40 border border-red-500/10 px-3 py-2 text-[10px] font-bold text-red-400 transition-all">
+                                    🗑️ Hapus
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        let modalCategoryCount = 0;
+
+        function addModalCategoryRow() {
+            modalCategoryCount++;
+            const container = document.getElementById('modal-categories-container');
+            const row = document.createElement('div');
+            row.className = "modal-category-row p-3 rounded-2xl bg-slate-900 border border-slate-800 relative space-y-3 animate-fade-in";
+            row.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-bold text-indigo-400 uppercase">Kategori #${modalCategoryCount}</span>
+                    <button type="button" onclick="this.closest('.modal-category-row').remove()" class="text-red-400 hover:text-red-500 text-[10px] font-bold">🗑️ Hapus</button>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-[9px] font-bold text-slate-500 uppercase">Nama Kelas Tiket</label>
+                        <input type="text" class="modal-cat-name w-full rounded-lg px-3 py-2 text-xs glass-input" placeholder="VIP / Reguler" required>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[9px] font-bold text-slate-500 uppercase">Kuota Total</label>
+                        <input type="number" class="modal-cat-quota w-full rounded-lg px-3 py-2 text-xs glass-input" placeholder="100" min="1" required>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-[9px] font-bold text-slate-500 uppercase">Harga Tiket (Rp)</label>
+                        <input type="number" class="modal-cat-price w-full rounded-lg px-3 py-2 text-xs glass-input" placeholder="150000" min="0" required>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[9px] font-bold text-slate-500 uppercase">Keterangan / Benefit (Opsional)</label>
+                        <input type="text" class="modal-cat-description w-full rounded-lg px-3 py-2 text-xs glass-input" placeholder="Gate khusus, soft drink">
+                    </div>
+                </div>
+            `;
+            container.appendChild(row);
+        }
+
+        // Buka Modal Tambah/Edit Event
+        function openEventModal(eventId = null) {
+            const modal = document.getElementById('event-modal');
+            const form = document.getElementById('form-event');
+            const titleEl = document.getElementById('event-modal-title');
+            
+            form.reset();
+            document.getElementById('event-image-file').value = '';
+            document.getElementById('event-image-status').innerText = 'Belum ada file dipilih';
+            
+            if (eventId) {
+                titleEl.innerText = "Ubah Info Event";
+                document.getElementById('event-modal-categories-section').classList.add('hidden');
+                const eventObj = allEvents.find(e => e.id === eventId);
+                if (eventObj) {
+                    document.getElementById('event-id').value = eventObj.id;
+                    document.getElementById('event-title').value = eventObj.title;
+                    document.getElementById('event-location').value = eventObj.location;
+                    
+                    // Format datetime-local value (YYYY-MM-DDThh:mm)
+                    const date = new Date(eventObj.event_date);
+                    const localIso = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+                    document.getElementById('event-date').value = localIso;
+                    
+                    document.getElementById('event-owner-email').value = eventObj.owner_email || '';
+                    document.getElementById('event-description').value = eventObj.description || '';
+                    document.getElementById('event-image-url').value = eventObj.image_url || '';
+                }
+            } else {
+                titleEl.innerText = "Buat Event Baru";
+                document.getElementById('event-id').value = '';
+                document.getElementById('event-owner-email').value = currentSession.user.email;
+                document.getElementById('event-modal-categories-section').classList.remove('hidden');
+                document.getElementById('modal-categories-container').innerHTML = '';
+                modalCategoryCount = 0;
+                addModalCategoryRow();
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        function closeEventModal() {
+            document.getElementById('event-modal').style.display = 'none';
+        }
+
+        async function handleAdminImageUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert("File terlalu besar! Maksimal 5MB.");
+                return;
+            }
+
+            const statusEl = document.getElementById('event-image-status');
+            statusEl.innerHTML = `<span class="text-indigo-400 animate-pulse">⏳ Mengunggah...</span>`;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const base64Data = e.target.result;
+                try {
+                    const response = await fetch(`${API_URL}/api/upload-image`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            imageBase64: base64Data,
+                            fileName: file.name
+                        })
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.imageUrl) {
+                        document.getElementById('event-image-url').value = result.imageUrl;
+                        statusEl.innerHTML = `<span class="text-emerald-400">✅ Berhasil Diunggah!</span>`;
+                        showToast("Gambar cover berhasil diunggah!", "success");
+                    } else {
+                        showToast(result.error || "Gagal mengunggah foto.", "error");
+                        statusEl.innerHTML = `<span class="text-red-400">❌ Gagal Unggah</span>`;
+                    }
+                } catch (err) {
+                    console.error("Upload error:", err);
+                    showToast("Terjadi kesalahan koneksi saat mengunggah foto.", "error");
+                    statusEl.innerHTML = `<span class="text-red-400">❌ Terjadi Kesalahan</span>`;
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Aksi Simpan Event (POST atau PUT)
+        async function saveEvent(e) {
+            e.preventDefault();
+            if (!currentSession) return;
+
+            const eventId = document.getElementById('event-id').value;
+            const title = document.getElementById('event-title').value.trim();
+            const locationObj = document.getElementById('event-location').value.trim();
+            const eventDate = document.getElementById('event-date').value;
+            const ownerEmail = document.getElementById('event-owner-email').value.trim();
+            const description = document.getElementById('event-description').value.trim();
+            const imageUrl = document.getElementById('event-image-url').value.trim();
+
+            const bodyData = {
+                title,
+                location: locationObj,
+                eventDate: new Date(eventDate).toISOString(),
+                description,
+                imageUrl,
+                owner_email: ownerEmail
+            };
+
+            // Jika membuat event baru, kumpulkan kategori tiket awal
+            if (!eventId) {
+                const categories = [];
+                const rows = document.querySelectorAll('.modal-category-row');
+                rows.forEach(row => {
+                    const name = row.querySelector('.modal-cat-name').value.trim();
+                    const price = Number(row.querySelector('.modal-cat-price').value);
+                    const quota = Number(row.querySelector('.modal-cat-quota').value);
+                    const desc = row.querySelector('.modal-cat-description').value.trim();
+                    if (name) {
+                        categories.push({
+                            categoryName: name,
+                            price: price,
+                            quota: quota,
+                            description: desc
+                        });
+                    }
+                });
+                if (categories.length === 0) {
+                    showToast("Minimal buat 1 kategori tiket!", "error");
+                    document.getElementById('main-loader').style.display = 'none';
+                    return;
+                }
+                bodyData.categories = categories;
+            }
+
+            document.getElementById('main-loader').style.display = 'flex';
+            try {
+                const url = eventId ? `${API_URL}/api/admin/events/${eventId}` : `${API_URL}/api/admin/events`;
+                const method = eventId ? 'PUT' : 'POST';
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentSession.access_token}`
+                    },
+                    body: JSON.stringify(bodyData)
+                });
+
+                if (res.status === 200 || res.status === 201) {
+                    showToast(eventId ? "Event berhasil diperbarui!" : "Event baru berhasil dibuat!", "success");
+                    closeEventModal();
+                    loadEventsData();
+                } else {
+                    const data = await res.json();
+                    showToast(data.message || "Gagal menyimpan event", "error");
+                }
+            } catch (err) {
+                console.error("Error saving event:", err);
+                showToast("Kesalahan sistem saat menyimpan data", "error");
+            } finally {
+                document.getElementById('main-loader').style.display = 'none';
+            }
+        }
+
+        // Aksi Hapus Event
+        async function deleteEvent(eventId) {
+            if (!confirm("Apakah Anda yakin ingin menghapus event ini? Seluruh data kategori tiket terkait juga akan ikut terhapus secara permanen.")) return;
+            if (!currentSession) return;
+
+            document.getElementById('main-loader').style.display = 'flex';
+            try {
+                const res = await fetch(`${API_URL}/api/admin/events/${eventId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${currentSession.access_token}` }
+                });
+
+                if (res.status === 200) {
+                    showToast("Event berhasil dihapus!", "success");
+                    loadEventsData();
+                } else {
+                    showToast("Gagal menghapus event", "error");
+                }
+            } catch (err) {
+                console.error("Error delete event:", err);
+                showToast("Kesalahan sistem saat menghapus data", "error");
+            } finally {
+                document.getElementById('main-loader').style.display = 'none';
+            }
+        }
+
+        // ==========================================
+        // MANAJEMEN KATEGORI TIKET
+        // ==========================================
+
+        let activeEventIdForCategories = null;
+        let eventCategories = [];
+
+        async function openCategoryModal(eventId, eventTitle) {
+            activeEventIdForCategories = eventId;
+            document.getElementById('cat-modal-subtitle').innerText = eventTitle;
+            hideCategoryForm();
+            await loadCategories();
+            document.getElementById('category-modal').style.display = 'flex';
+        }
+
+        function closeCategoryModal() {
+            document.getElementById('category-modal').style.display = 'none';
+            activeEventIdForCategories = null;
+        }
+
+        async function loadCategories() {
+            if (!currentSession || !activeEventIdForCategories) return;
+            
+            const container = document.getElementById('categories-list-container');
+            container.innerHTML = `<div class="text-center py-4 text-xs text-slate-500">Memuat kategori...</div>`;
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/categories?event_id=${activeEventIdForCategories}`, {
+                    headers: { 'Authorization': `Bearer ${currentSession.access_token}` }
+                });
+
+                if (res.status === 200) {
+                    eventCategories = await res.json();
+                    renderCategoriesList();
+                } else {
+                    container.innerHTML = `<div class="text-center py-4 text-xs text-red-500">Gagal memuat kategori tiket</div>`;
+                }
+            } catch (err) {
+                container.innerHTML = `<div class="text-center py-4 text-xs text-red-500">Kesalahan koneksi server</div>`;
+            }
+        }
+
+        function renderCategoriesList() {
+            const container = document.getElementById('categories-list-container');
+            container.innerHTML = '';
+
+            if (eventCategories.length === 0) {
+                container.innerHTML = `<p class="text-slate-500 text-xs text-center py-6">Belum ada kategori tiket untuk event ini.</p>`;
+                return;
+            }
+
+            eventCategories.forEach(c => {
+                const bookedPct = c.quota > 0 ? Math.round((c.booked / c.quota) * 100) : 0;
+                
+                container.innerHTML += `
+                    <div class="p-3.5 rounded-xl bg-slate-900/65 border border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:border-slate-700 transition-all">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="font-extrabold text-xs text-slate-200">${c.category_name}</span>
+                                ${c.is_resell ? `<span class="bg-amber-600/20 text-amber-400 border border-amber-500/20 text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase">Resell</span>` : ''}
+                            </div>
+                            <div class="text-[10px] text-slate-400">
+                                💰 Harga: <span class="font-bold text-indigo-400">Rp ${Number(c.price).toLocaleString('id-ID')}</span> • 📦 Sisa: <span class="font-semibold text-slate-300">${c.booked}/${c.quota} terjual (${bookedPct}%)</span>
+                            </div>
+                            ${c.description ? `<p class="text-[9px] text-slate-500">${c.description}</p>` : ''}
+                        </div>
+                        <div class="flex gap-2 justify-end">
+                            <button onclick="showEditCategoryForm(${c.id})" class="rounded-lg bg-slate-800 hover:bg-slate-700 px-2.5 py-1 text-[9px] font-bold text-slate-300 transition-all">
+                                Ubah
+                            </button>
+                            <button onclick="deleteCategory(${c.id})" class="rounded-lg bg-red-950/20 hover:bg-red-900/30 border border-red-500/10 px-2.5 py-1 text-[9px] font-bold text-red-400 transition-all">
+                                Hapus
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function showAddCategoryForm() {
+            const formContainer = document.getElementById('category-form-container');
+            document.getElementById('form-category').reset();
+            document.getElementById('cat-id').value = '';
+            document.getElementById('cat-event-id').value = activeEventIdForCategories;
+            document.getElementById('cat-booked').value = 0;
+            document.getElementById('cat-form-title').innerText = "Tambah Kategori Baru";
+            formContainer.classList.remove('hidden');
+        }
+
+        function showEditCategoryForm(catId) {
+            const formContainer = document.getElementById('category-form-container');
+            const cat = eventCategories.find(c => c.id === catId);
+            if (cat) {
+                document.getElementById('cat-id').value = cat.id;
+                document.getElementById('cat-event-id').value = cat.event_id;
+                document.getElementById('cat-name').value = cat.category_name;
+                document.getElementById('cat-price').value = cat.price;
+                document.getElementById('cat-quota').value = cat.quota;
+                document.getElementById('cat-booked').value = cat.booked;
+                document.getElementById('cat-description').value = cat.description || '';
+                
+                document.getElementById('cat-form-title').innerText = "Ubah Kategori Tiket";
+                formContainer.classList.remove('hidden');
+            }
+        }
+
+        function hideCategoryForm() {
+            document.getElementById('category-form-container').classList.add('hidden');
+        }
+
+        async function saveCategory(e) {
+            e.preventDefault();
+            if (!currentSession) return;
+
+            const catId = document.getElementById('cat-id').value;
+            const eventId = document.getElementById('cat-event-id').value;
+            const name = document.getElementById('cat-name').value.trim();
+            const price = document.getElementById('cat-price').value;
+            const quota = document.getElementById('cat-quota').value;
+            const booked = document.getElementById('cat-booked').value;
+            const description = document.getElementById('cat-description').value.trim();
+
+            const bodyData = {
+                event_id: eventId,
+                category_name: name,
+                price: Number(price),
+                quota: Number(quota),
+                booked: Number(booked || 0),
+                description
+            };
+
+            try {
+                const url = catId ? `${API_URL}/api/admin/categories/${catId}` : `${API_URL}/api/admin/categories`;
+                const method = catId ? 'PUT' : 'POST';
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentSession.access_token}`
+                    },
+                    body: JSON.stringify(bodyData)
+                });
+
+                if (res.status === 200 || res.status === 201) {
+                    showToast("Kategori tiket berhasil disimpan!", "success");
+                    hideCategoryForm();
+                    loadCategories();
+                } else {
+                    showToast("Gagal menyimpan kategori tiket", "error");
+                }
+            } catch (err) {
+                console.error("Error saving category:", err);
+                showToast("Kesalahan koneksi saat menyimpan kategori", "error");
+            }
+        }
+
+        async function deleteCategory(catId) {
+            if (!confirm("Apakah Anda yakin ingin menghapus kategori tiket ini?")) return;
+            if (!currentSession) return;
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/categories/${catId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${currentSession.access_token}` }
+                });
+
+                if (res.status === 200) {
+                    showToast("Kategori tiket terhapus!", "success");
+                    loadCategories();
+                } else {
+                    showToast("Gagal menghapus kategori tiket", "error");
+                }
+            } catch (err) {
+                console.error("Error delete category:", err);
+                showToast("Kesalahan sistem saat menghapus kategori", "error");
+            }
+        }
+
+
+
+        // ==========================================
+        // MANAJEMEN TRANSAKSI
+        // ==========================================
+
+        async function loadTransactionsData() {
+            if (!currentSession) return;
+            document.getElementById('main-loader').style.display = 'flex';
+            try {
+                const res = await fetch(`${API_URL}/api/admin/transactions`, {
+                    headers: { 'Authorization': `Bearer ${currentSession.access_token}` }
+                });
+                
+                if (res.status === 200) {
+                    allTransactions = await res.json();
+                    renderTransactionsTable();
+                } else {
+                    showToast("Gagal memuat transaksi", "error");
+                }
+            } catch (err) {
+                console.error("Error load transactions:", err);
+                showToast("Kesalahan saat menghubungkan ke server", "error");
+            } finally {
+                document.getElementById('main-loader').style.display = 'none';
+            }
+        }
+
+        function renderTransactionsTable(dataToRender = null) {
+            const trxs = dataToRender || allTransactions;
+            const tbody = document.getElementById('transactions-tbody');
+            tbody.innerHTML = '';
+
+            if (trxs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-500">Tidak ada transaksi ditemukan</td></tr>`;
+                return;
+            }
+
+            trxs.forEach(t => {
+                const dateStr = new Date(t.created_at).toLocaleDateString('id-ID', {
+                    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                });
+
+                let statusClass = "text-yellow-400 bg-yellow-500/10";
+                if (t.status === 'PAID') statusClass = "text-emerald-400 bg-emerald-500/10";
+                if (t.status === 'USED') statusClass = "text-indigo-400 bg-indigo-500/10";
+                if (t.status === 'EXPIRED') statusClass = "text-red-400 bg-red-500/10";
+
+                const eventTitle = t.ticket_categories && t.ticket_categories.events ? t.ticket_categories.events.title : 'Event Tidak Diketahui';
+                const catName = t.ticket_categories ? t.ticket_categories.category_name : 'Kategori Tidak Diketahui';
+
+                // Dropdown pilihan status
+                const statuses = ['PENDING', 'PAID', 'USED', 'EXPIRED', 'CANCELLED'];
+                let statusDropdownOptions = '';
+                statuses.forEach(s => {
+                    statusDropdownOptions += `<option value="${s}" ${t.status === s ? 'selected' : ''}>${s}</option>`;
+                });
+
+                tbody.innerHTML += `
+                    <tr class="border-b border-slate-800/40 hover:bg-slate-800/15 transition-all duration-150">
+                        <td class="py-3.5 px-2">
+                            <span class="font-mono font-bold text-slate-200 block">${t.order_id}</span>
+                            <span class="text-[9px] text-slate-500 block">${dateStr}</span>
+                        </td>
+                        <td class="py-3.5 px-2">
+                            <div class="font-bold text-slate-200 truncate max-w-[150px]" title="${eventTitle}">${eventTitle}</div>
+                            <div class="text-[10px] text-slate-400">${catName}</div>
+                        </td>
+                        <td class="py-3.5 px-2">
+                            <div class="font-bold text-slate-200">${t.customer_name}</div>
+                            <div class="text-[10px] text-slate-500">${t.customer_email}</div>
+                        </td>
+                        <td class="py-3.5 px-2 font-semibold text-slate-300">Rp ${Number(t.amount).toLocaleString('id-ID')}</td>
+                        <td class="py-3.5 px-2">
+                            <span class="px-2 py-0.5 rounded-full font-bold text-[9px] ${statusClass}">${t.status}</span>
+                        </td>
+                        <td class="py-3.5 px-2">
+                            ${t.ticket_code ? `
+                                <div class="font-mono font-bold text-indigo-400 text-[10px]">${t.ticket_code}</div>
+                                <button onclick="window.open('${t.qr_code_url}', '_blank')" class="text-[9px] text-indigo-300 hover:underline mt-0.5 block">👁️ Lihat QR</button>
+                            ` : `<span class="text-slate-500 font-medium">Belum Dibuat</span>`}
+                        </td>
+                        <td class="py-3.5 px-2 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <select onchange="updateTransactionStatus('${t.order_id}', this.value)" class="rounded-lg bg-slate-900 border border-slate-800 px-2 py-1 text-[10px] font-bold text-slate-300">
+                                    ${statusDropdownOptions}
+                                </select>
+                                ${(t.status === 'PAID' || t.status === 'USED') ? `
+                                    <button onclick="resendTicketEmail('${t.order_id}')" class="rounded-lg bg-indigo-600 hover:bg-indigo-500 px-2.5 py-1 text-[9px] font-bold text-white transition-all">
+                                        📧 Kirim Ulang
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Ubah Status Transaksi
+        async function updateTransactionStatus(orderId, newStatus) {
+            if (!currentSession) return;
+            
+            // Konfirmasi jika diubah menjadi PAID
+            if (newStatus === 'PAID') {
+                if (!confirm("Mengubah status transaksi menjadi PAID akan otomatis menghasilkan Kode Tiket, QR Code, mencatat kuota terjual, serta mengirimkan email E-Ticket resmi kepada pembeli. Lanjutkan?")) {
+                    loadTransactionsData(); // Reload table data to reset selection
+                    return;
+                }
+            }
+
+            document.getElementById('main-loader').style.display = 'flex';
+            try {
+                const res = await fetch(`${API_URL}/api/admin/transactions/${orderId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentSession.access_token}`
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (res.status === 200) {
+                    showToast(`Transaksi ${orderId} berhasil diupdate ke ${newStatus}!`, "success");
+                    loadTransactionsData();
+                } else {
+                    const data = await res.json();
+                    showToast(data.message || "Gagal mengupdate transaksi", "error");
+                    loadTransactionsData();
+                }
+            } catch (err) {
+                console.error("Error update transaction status:", err);
+                showToast("Terjadi kesalahan sistem saat memperbarui transaksi", "error");
+                loadTransactionsData();
+            } finally {
+                document.getElementById('main-loader').style.display = 'none';
+            }
+        }
+
+        // Kirim Ulang Email Tiket
+        async function resendTicketEmail(orderId) {
+            if (!confirm(`Apakah Anda ingin mengirim ulang email E-Ticket resmi untuk transaksi ${orderId}?`)) return;
+            if (!currentSession) return;
+
+            document.getElementById('main-loader').style.display = 'flex';
+            try {
+                const res = await fetch(`${API_URL}/api/admin/transactions/${orderId}/resend`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${currentSession.access_token}` }
+                });
+
+                if (res.status === 200) {
+                    const data = await res.json();
+                    showToast(data.message || "Email e-ticket berhasil dikirim ulang!", "success");
+                } else {
+                    const data = await res.json();
+                    showToast(data.message || "Gagal mengirim ulang email tiket", "error");
+                }
+            } catch (err) {
+                console.error("Error resending email:", err);
+                showToast("Kesalahan sistem saat mengirim email", "error");
+            } finally {
+                document.getElementById('main-loader').style.display = 'none';
+            }
+        }
+
+        // Pencarian & Filter Transaksi (Frontend Side)
+        function filterTransactions() {
+            const query = document.getElementById('trx-search').value.toLowerCase().trim();
+            const statusFilter = document.getElementById('trx-filter-status').value;
+
+            const filtered = allTransactions.filter(t => {
+                // Filter Status
+                const matchesStatus = (statusFilter === 'ALL') || (t.status === statusFilter);
+                
+                // Filter Pencarian
+                const orderIdMatches = t.order_id.toLowerCase().includes(query);
+                const nameMatches = t.customer_name.toLowerCase().includes(query);
+                const emailMatches = t.customer_email.toLowerCase().includes(query);
+                const ticketCodeMatches = t.ticket_code && t.ticket_code.toLowerCase().includes(query);
+
+                const matchesQuery = orderIdMatches || nameMatches || emailMatches || ticketCodeMatches;
+
+                return matchesStatus && matchesQuery;
+            });
+
+            renderTransactionsTable(filtered);
+        }
     </script>
 </body>
 </html>
