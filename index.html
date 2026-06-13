@@ -264,7 +264,30 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 10;
-            pointer-events: none;
+        }
+
+        /* --- Tampilan Responsif untuk Perangkat HP (Lebar Layar <= 480px) --- */
+        @media (max-width: 480px) {
+            body {
+                background-color: #f7f8fb; /* Menyamakan background luar dengan aplikasi */
+            }
+            .app-container {
+                max-width: 100%;
+                height: 100vh;
+                border: none;
+                border-radius: 0;
+                box-shadow: none;
+                padding: 20px 16px;
+            }
+            .dynamic-island {
+                display: none; /* Hilangkan dynamic island di HP */
+            }
+            .home-indicator {
+                display: none; /* Hilangkan home indicator di HP */
+            }
+            .header-spacer {
+                height: 10px; /* Kurangi spacer atas karena dynamic island hilang */
+            }
         }
     </style>
 </head>
